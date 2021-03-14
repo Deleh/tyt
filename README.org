@@ -3,13 +3,13 @@
   :header-args: :tangle tyt :shebang "#!/bin/sh"
   :END:
 
-  Terminal YouTube (*tyt*) is a small bash script that lets you play YouTube videos from the command line.
+  Terminal YouTube (*tyt*) is a small bash script that lets you play YouTube videos by query from the command line.
   It is created via literate programming, you can find the code below.
 
 ** Script
 *** Dependencies
 
-    The dependencies of the scripts are:
+    The dependencies of the script are:
 
     - [[https://stedolan.github.io/jq/][jq]]
     - [[https://mpv.io/][mpv]]
