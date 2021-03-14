@@ -85,19 +85,19 @@
             ;;
         esac
       done
-    
+
       if [ "$help" = true ]
       then
         print_usage
         exit 0
       fi
-    
+
       if [ "${#other_arguments[@]}" != "1" ]
       then
         print_usage
         exit 1
       fi
-    
+
       query="${other_arguments[0]}"
     #+end_src
 
@@ -111,7 +111,7 @@
       echo -ne "    \e[1m| \e[31mtyt\e[0m \e[1m|\e[0m\n"
       echo -ne "    \e[1m=======\e[0m\n\n"
     #+end_src
-    
+
 *** Get URL
 
     To play a video, we need to get a valid URL.
@@ -127,40 +127,40 @@
       else
         n=$((alternative+1))
       fi
-    
+
       echo -ne "Searching for: \e[34m\e[1m$query\e[0m    \r"
-    
+
       until results=$(youtube-dl --default-search "ytsearch" -j "ytsearch$n:$query") &> /dev/null
       do
-    
+
         case $i in
           0)
-    	appendix="   "
-    	;;
+        appendix="   "
+        ;;
           1)
-    	appendix=".  "
-    	;;
+        appendix=".  "
+        ;;
           2)
-    	appendix=".. "
-    	;;
+        appendix=".. "
+        ;;
           ,*)
-    	appendix="..."
-    	;;
+        appendix="..."
+        ;;
         esac
-    
+
         echo -ne "Searching for: \e[34m\e[1m$query\e[0m $appendix\r"
-    
+
         i=$(((i + 1) % 4))
         sleep 1
-    
+
       done
-    
+
       echo -ne "Searching for: \e[34m\e[1m$query\e[0m    \n"
-    
+
       urls=$(echo $results | jq '.webpage_url' | tr -d '"')
       titles=$(echo $results | jq '.fulltitle' | tr -d '"')
       uploaders=$(echo $results | jq '.uploader' | tr -d '"')
-    
+
       OLDIFS=$IFS
       IFS=$'\n'
       urls=($urls)
@@ -177,26 +177,26 @@
       if [ "$interactive" = true ]
       then
         echo ""
-	selections=(0 1 2 3 4 5 6 7 8 9)
+        selections=(0 1 2 3 4 5 6 7 8 9)
         for i in ${selections[@]}
-	do
+        do
           echo -ne "  \e[1m$i\e[0m: ${titles[$i]} (\e[33m\e[1m${uploaders[$i]}\e[0m)\n"
-	done
-	echo -ne "\nSelection: "
-	read selection
-	while [[ ! "${selections[@]}" =~ "${selection}" ]]
-	do
-	  echo -ne "Not valid, try again: "
-	  read selection
-	done
-	echo ""
+        done
+        echo -ne "\nSelection: "
+        read selection
+        while [[ ! "${selections[@]}" =~ "${selection}" ]]
+        do
+          echo -ne "Not valid, try again: "
+          read selection
+        done
+        echo ""
         url=${urls[$selection]}
         title=${titles[$selection]}
-	uploader=${uploaders[$selection]}
+        uploader=${uploaders[$selection]}
       else
         url=${urls[$alternative]}
         title=${titles[$alternative]}
-	uploader=${uploaders[$alternative]}
+        uploader=${uploaders[$alternative]}
       fi
     #+end_src
 
