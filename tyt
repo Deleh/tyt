@@ -1,0 +1,113 @@
+#!/bin/sh
+if ! command -v mpv &> /dev/null
+then
+  echo -ne "\e[1mmpv\e[0m was not found, please install it"
+  exit 1
+elif ! command -v youtube-dl &> /dev/null
+then
+  echo -ne "\e[1myoutube-dl\e[0m was not found, please install it"
+  exit 1
+fi
+
+function print_usage {
+  echo "tyt [ -a* | --alternative ] \"QUERY\""
+}
+
+alternative=0
+format="flac"
+help=false
+
+for arg in "$@"
+do
+  case $arg in
+    -a*)
+      alternative="${arg:1}"
+      alternative="${#alternative}"
+      shift
+      ;;
+    --alternative)
+      alternative=1
+      shift
+      ;;
+    -h|--help)
+      help=true
+      shift
+      ;;
+    *)
+      other_arguments+=("$1")
+      shift
+      ;;
+  esac
+done
+
+if [ "$help" = true ]
+then
+  print_usage
+  exit 0
+fi
+
+if [ "${#other_arguments[@]}" != "1" ]
+then
+  print_usage
+  exit 1
+fi
+
+query="${other_arguments[0]}"
+
+echo -ne "\n    \e[1m  \ /\e[0m\n"
+echo -ne "    \e[1m=======\e[0m\n"
+echo -ne "    | \e[31m\e[1mtyt\e[0m |\n"
+echo -ne "    \e[1m=======\e[0m\n\n"
+
+i=0
+n=$((alternative+1))
+
+echo -ne "Searching for: \e[33m\e[1m$query\e[0m    \r"
+
+until results=$(youtube-dl --default-search "ytsearch" -j "ytsearch$n:$query") &> /dev/null
+do
+
+  case $i in
+    0)
+  appendix="   "
+  ;;
+    1)
+  appendix=".  "
+  ;;
+    2)
+  appendix=".. "
+  ;;
+    *)
+  appendix="..."
+  ;;
+  esac
+
+  echo -ne "Searching for: \e[33m\e[1m$query\e[0m $appendix\r"
+
+  i=$(((i + 1) % 4))
+  sleep 1
+
+done
+
+echo -ne "Searching for: \e[33m\e[1m$query\e[0m    \n"
+
+urls=$(echo $results | jq '.webpage_url' | tr -d '"')
+
+OLDIFS=$IFS
+IFS=$'\n'
+results=($results)
+urls=($urls)
+IFS=$OLDIFS
+
+result=${results[$alternative]}
+url=${urls[$alternative]}
+
+i=0  
+
+title=$(echo $result | jq '.fulltitle')
+title="${title%\"}"
+title="${title#\"}"
+
+echo -ne "Playing: \e[32m\e[1m$title\e[0m"
+
+mpv $url &> /dev/null

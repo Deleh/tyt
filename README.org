@@ -1,0 +1,174 @@
+* tyt
+  :PROPERTIES:
+  :header-args: :tangle tyt :shebang "#!/bin/sh"
+  :END:
+
+  Terminal YouTube (*tyt*) is a small bash script that lets you play YouTube videos from the command line.
+  It is created via literate programming, you can find the code below.
+
+** Script
+*** Dependencies
+
+    The dependencies of the scripts are:
+
+    - [[https://stedolan.github.io/jq/][jq]]
+    - [[https://mpv.io/][mpv]]
+    - [[https://ytdl-org.github.io/youtube-dl/][youtube-dl]]
+
+    Please make sure those are available on your system.
+    If you are using the [[https://nixos.org/][Nix]] package manager, you can run =nix-shell= in the project directory.
+    This will drop you into a shell with all requirements fulfilled.
+
+    On the start of the script, it is checked if the dependencies are fulfilled.
+
+    #+begin_src sh
+      if ! command -v mpv &> /dev/null
+      then
+        echo -ne "\e[1mmpv\e[0m was not found, please install it"
+	exit 1
+      elif ! command -v youtube-dl &> /dev/null
+      then
+        echo -ne "\e[1myoutube-dl\e[0m was not found, please install it"
+	exit 1
+      fi
+    #+end_src
+
+*** Usage
+
+    This function prints the usage of the script.
+
+    #+begin_src sh
+      function print_usage {
+        echo "tyt [ -a* | --alternative ] \"QUERY\""
+      }
+    #+end_src
+
+*** Arguments
+
+    At first we parse the arguments.
+    We have the following flags:
+
+    - =a*|alternative= :: Alternative video (optional); You can parse any amount of alternatives (e.g. =-aaa=)
+
+    Additionally we have exacly one mandatory quoted string as query.
+
+    #+begin_src sh
+      alternative=0
+      format="flac"
+      help=false
+
+      for arg in "$@"
+      do
+        case $arg in
+          -a*)
+            alternative="${arg:1}"
+            alternative="${#alternative}"
+            shift
+            ;;
+          --alternative)
+            alternative=1
+            shift
+            ;;
+          -h|--help)
+            help=true
+            shift
+            ;;
+          ,*)
+            other_arguments+=("$1")
+            shift
+            ;;
+        esac
+      done
+    
+      if [ "$help" = true ]
+      then
+        print_usage
+        exit 0
+      fi
+    
+      if [ "${#other_arguments[@]}" != "1" ]
+      then
+        print_usage
+        exit 1
+      fi
+    
+      query="${other_arguments[0]}"
+    #+end_src
+
+*** Greeter
+
+    If the arguments match, print a greeter.
+
+    #+begin_src sh
+      echo -ne "\n    \e[1m  \ /\e[0m\n"
+      echo -ne "    \e[1m=======\e[0m\n"
+      echo -ne "    | \e[31m\e[1mtyt\e[0m |\n"
+      echo -ne "    \e[1m=======\e[0m\n\n"
+    #+end_src
+    
+*** Get URL
+
+    To play a video, we need to get a valid URL.
+    Since there are sometimes parsing errors of the JSON response, we use an endless loop to try until we get a valid response.
+    The first /n/ URLs are saved if an alternative download is requested.
+
+    #+begin_src sh
+      i=0
+      n=$((alternative+1))
+    
+      echo -ne "Searching for: \e[33m\e[1m$query\e[0m    \r"
+    
+      until results=$(youtube-dl --default-search "ytsearch" -j "ytsearch$n:$query") &> /dev/null
+      do
+    
+        case $i in
+          0)
+    	appendix="   "
+    	;;
+          1)
+    	appendix=".  "
+    	;;
+          2)
+    	appendix=".. "
+    	;;
+          ,*)
+    	appendix="..."
+    	;;
+        esac
+    
+        echo -ne "Searching for: \e[33m\e[1m$query\e[0m $appendix\r"
+    
+        i=$(((i + 1) % 4))
+        sleep 1
+    
+      done
+    
+      echo -ne "Searching for: \e[33m\e[1m$query\e[0m    \n"
+    
+      urls=$(echo $results | jq '.webpage_url' | tr -d '"')
+    
+      OLDIFS=$IFS
+      IFS=$'\n'
+      results=($results)
+      urls=($urls)
+      IFS=$OLDIFS
+    
+      result=${results[$alternative]}
+      url=${urls[$alternative]}
+    #+end_src
+
+*** Play video
+
+    Finally the video is played via mpv.
+
+    #+begin_src sh
+      i=0  
+    
+      title=$(echo $result | jq '.fulltitle')
+      title="${title%\"}"
+      title="${title#\"}"
+    
+      echo -ne "Playing: \e[32m\e[1m$title\e[0m"
+    
+      mpv $url &> /dev/null
+    #+end_src
