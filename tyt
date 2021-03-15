@@ -1,11 +1,22 @@
-#!/bin/sh
+#!/usr/bin/env bash
+missing_dependencies=false
+if ! command -v jq &> /dev/null
+then
+  echo -ne "\e[1mjq\e[0m was not found, please install it\n"
+  missing_dependencies=true
+fi
 if ! command -v mpv &> /dev/null
 then
-  echo -ne "\e[1mmpv\e[0m was not found, please install it"
-  exit 1
-elif ! command -v youtube-dl &> /dev/null
+  echo -ne "\e[1mmpv\e[0m was not found, please install it\n"
+  missing_dependencies=true
+fi
+if ! command -v youtube-dl &> /dev/null
 then
-  echo -ne "\e[1myoutube-dl\e[0m was not found, please install it"
+  echo -ne "\e[1myoutube-dl\e[0m was not found, please install it\n"
+  missing_dependencies=true
+fi
+if [ "$missing_dependencies" = true ]
+then
   exit 1
 fi
 

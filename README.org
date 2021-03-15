@@ -1,6 +1,6 @@
 * tyt
 :PROPERTIES:
-:header-args: :tangle tyt :shebang "#!/bin/sh"
+:header-args: :tangle tyt :shebang "#!/usr/bin/env bash"
 :END:
 
 Terminal YouTube (*tyt*) is a small bash script that lets you play YouTube videos by query from the command line.
@@ -21,14 +21,25 @@ This will drop you into a shell with all requirements fulfilled.
 
 On the start of the script, it is checked if the dependencies are fulfilled.
 
-#+begin_src sh
+#+begin_src bash
+  missing_dependencies=false
+  if ! command -v jq &> /dev/null
+  then
+    echo -ne "\e[1mjq\e[0m was not found, please install it\n"
+    missing_dependencies=true
+  fi
   if ! command -v mpv &> /dev/null
   then
-    echo -ne "\e[1mmpv\e[0m was not found, please install it"
-    exit 1
-  elif ! command -v youtube-dl &> /dev/null
+    echo -ne "\e[1mmpv\e[0m was not found, please install it\n"
+    missing_dependencies=true
+  fi
+  if ! command -v youtube-dl &> /dev/null
   then
-    echo -ne "\e[1myoutube-dl\e[0m was not found, please install it"
+    echo -ne "\e[1myoutube-dl\e[0m was not found, please install it\n"
+    missing_dependencies=true
+  fi
+  if [ "$missing_dependencies" = true ]
+  then
     exit 1
   fi
 #+end_src
@@ -37,7 +48,7 @@ On the start of the script, it is checked if the dependencies are fulfilled.
 
 This function prints the usage of the script.
 
-#+begin_src sh
+#+begin_src bash
   function print_usage {
     echo "tyt [ (-a* | --alternative) | (-i | --interactive) | (-m | --music) ] \"QUERY\""
   }
@@ -54,7 +65,7 @@ We have the following flags:
 
 Additionally we have exacly one mandatory quoted string as query.
 
-#+begin_src sh
+#+begin_src bash
   alternative=0
   format="flac"
   interactive=false
@@ -113,7 +124,7 @@ If the arguments match, print a greeter.
 Another greeter is printed if the flag =-m= is set.
 Make sure your terminal emulator supports Unicode to see the notes.
 
-#+begin_src sh
+#+begin_src bash
   if [ "$music" = false ]
   then
     echo -ne "\n      \e[1m\ /\e[0m\n"
@@ -134,7 +145,7 @@ To play a video, we need to get a valid URL.
 Since there are sometimes parsing errors of the JSON response, we use an endless loop to try until we get a valid response.
 The first /n/ URLs are saved if an alternative download is requested.
 
-#+begin_src sh
+#+begin_src bash
   i=0
 
   if [ "$interactive" = true ]
@@ -189,7 +200,7 @@ The first /n/ URLs are saved if an alternative download is requested.
 
 If the interactive flag is present, show the first ten results and query for a video to play.
 
-#+begin_src sh
+#+begin_src bash
   if [ "$interactive" = true ]
   then
     echo ""
@@ -221,7 +232,7 @@ If the interactive flag is present, show the first ten results and query for a v
 Finally the video is played via mpv.
 If the =-m= flag is set, only the audio track is played.
 
-#+begin_src sh
+#+begin_src bash
   echo -ne "Playing: \e[32m\e[1m$title\e[0m (\e[33m\e[1m$uploader\e[0m)\n"
   if [ "$music" = true ]
   then
