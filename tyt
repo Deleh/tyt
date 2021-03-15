@@ -162,10 +162,40 @@ else
   uploader=${uploaders[$alternative]}
 fi
 
-echo -ne "Playing: \e[32m\e[1m$title\e[0m (\e[33m\e[1m$uploader\e[0m)\n"
-if [ "$music" = true ]
+function play {
+  echo -ne "Playing: \e[32m\e[1m$2\e[0m (\e[33m\e[1m$3\e[0m)\n"
+  if [ "$music" = true ]
+  then
+    mpv --no-video $1 &> /dev/null
+  else
+    mpv $1 &> /dev/null
+  fi
+}
+
+play "$url" "$title" "$uploader"
+
+if [ "$interactive" = true ]
 then
-  mpv --no-video $url &> /dev/null
-else
-  mpv $url &> /dev/null
+  quit=false
+  selections=(0 1 2 3 4 5 6 7 8 9 q)
+  while [ ! "$quit" = true ]
+  do
+    echo -ne "\nSelect another or press [q] to quit: "
+    read selection
+    while [[ ! "${selections[@]}" =~ "${selection}" ]]
+    do
+      echo -ne "Not valid, try again: "
+      read selection
+    done
+    if [ ! "$selection" = "q" ]
+    then
+      echo ""
+      url=${urls[$selection]}
+      title=${titles[$selection]}
+      uploader=${uploaders[$selection]}
+      play "$url" "$title" "$uploader"
+    else
+      quit=true
+    fi
+  done
 fi
