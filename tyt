@@ -2,22 +2,22 @@
 missing_dependencies=false
 if ! command -v jq &> /dev/null
 then
-  echo -ne "\e[1mjq\e[0m was not found, please install it\n"
-  missing_dependencies=true
+    echo -ne "\e[1mjq\e[0m was not found, please install it\n"
+    missing_dependencies=true
 fi
 if ! command -v mpv &> /dev/null
 then
-  echo -ne "\e[1mmpv\e[0m was not found, please install it\n"
-  missing_dependencies=true
+    echo -ne "\e[1mmpv\e[0m was not found, please install it\n"
+    missing_dependencies=true
 fi
 if ! command -v youtube-dl &> /dev/null
 then
-  echo -ne "\e[1myoutube-dl\e[0m was not found, please install it\n"
-  missing_dependencies=true
+    echo -ne "\e[1myoutube-dl\e[0m was not found, please install it\n"
+    missing_dependencies=true
 fi
 if [ "$missing_dependencies" = true ]
 then
-  exit 1
+    exit 1
 fi
 
 function print_usage {
@@ -139,63 +139,66 @@ IFS=$OLDIFS
 
 if [ "$interactive" = true ]
 then
-  echo ""
-  selections=(0 1 2 3 4 5 6 7 8 9)
-  for i in ${selections[@]}
-  do
-    echo -ne "  \e[1m$i\e[0m: ${titles[$i]} (\e[33m\e[1m${uploaders[$i]}\e[0m)\n"
-  done
-  echo -ne "\nSelection: "
-  read selection
-  while [[ ! "${selections[@]}" =~ "${selection}" ]]
-  do
-    echo -ne "Not valid, try again: "
+    echo ""
+    selections=(0 1 2 3 4 5 6 7 8 9 q)
+    for i in ${selections[@]}
+    do
+        echo -ne "  \e[1m$i\e[0m: ${titles[$i]} (\e[33m\e[1m${uploaders[$i]}\e[0m)\n"
+    done
+    echo -ne "  \e[1mq\e[0m: Quit\n"
+    echo -ne "\nSelection: "
     read selection
-  done
-  echo ""
-  url=${urls[$selection]}
-  title=${titles[$selection]}
-  uploader=${uploaders[$selection]}
+    while [[ ! "${selections[@]}" =~ "${selection}" ]]
+    do
+        echo -ne "Not valid, try again: "
+        read selection
+    done
+    if [ "$selection" = "q" ]
+    then
+        exit
+    fi
+    echo ""
+    url=${urls[$selection]}
+    title=${titles[$selection]}
+    uploader=${uploaders[$selection]}
 else
-  url=${urls[$alternative]}
-  title=${titles[$alternative]}
-  uploader=${uploaders[$alternative]}
+    url=${urls[$alternative]}
+    title=${titles[$alternative]}
+    uploader=${uploaders[$alternative]}
 fi
 
 function play {
-  echo -ne "Playing: \e[32m\e[1m$2\e[0m (\e[33m\e[1m$3\e[0m)\n"
-  if [ "$music" = true ]
-  then
-    mpv --no-video $1 &> /dev/null
-  else
-    mpv $1 &> /dev/null
-  fi
+    echo -ne "Playing: \e[32m\e[1m$2\e[0m (\e[33m\e[1m$3\e[0m)\n"
+    if [ "$music" = true ]
+    then
+        mpv --no-video $1 &> /dev/null
+    else
+        mpv $1 &> /dev/null
+    fi
 }
 
 play "$url" "$title" "$uploader"
 
 if [ "$interactive" = true ]
 then
-  quit=false
-  selections=(0 1 2 3 4 5 6 7 8 9 q)
-  while [ ! "$quit" = true ]
-  do
-    echo -ne "\nSelect another or press [q] to quit: "
-    read selection
-    while [[ ! "${selections[@]}" =~ "${selection}" ]]
+    while :
     do
-      echo -ne "Not valid, try again: "
-      read selection
+        echo -ne "\nSelect another or enter [q] to quit: "
+        read selection
+        while [[ ! "${selections[@]}" =~ "${selection}" ]]
+        do
+            echo -ne "Not valid, try again: "
+            read selection
+        done
+        if [ ! "$selection" = "q" ]
+        then
+            echo ""
+            url=${urls[$selection]}
+            title=${titles[$selection]}
+            uploader=${uploaders[$selection]}
+            play "$url" "$title" "$uploader"
+        else
+          exit
+        fi
     done
-    if [ ! "$selection" = "q" ]
-    then
-      echo ""
-      url=${urls[$selection]}
-      title=${titles[$selection]}
-      uploader=${uploaders[$selection]}
-      play "$url" "$title" "$uploader"
-    else
-      quit=true
-    fi
-  done
 fi
