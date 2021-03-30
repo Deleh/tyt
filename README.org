@@ -61,9 +61,9 @@ This function prints the usage of the script.
 At first we parse the arguments.
 We have the following flags:
 
-- =a*|alternative= :: Alternative video (optional); You can parse any amount of alternatives (e.g. =-aaa=)
-- =i|interactive= :: Interactive mode; Shows the first 10 results and queries for a selection; If this flag is set, =-a= is ignored
-- =m|music= :: Play only the audio track of the video
+- =-a*|--alternative= :: Alternative video (optional); You can parse any amount of alternatives (e.g. =-aaa=)
+- =-i|--interactive= :: Interactive mode; Shows the first 10 results and queries for a selection; If this flag is set, =-a= is ignored
+- =-m|--music= :: Play only the audio track of the video
 
 Additionally we have exacly one mandatory quoted string as query.
 
