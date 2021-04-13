@@ -146,7 +146,7 @@ if [ "$interactive" = true ]
 then
     echo ""
     selections=(0 1 2 3 4 5 6 7 8 9 q)
-    for i in ${selections[@]}
+    for i in "${selections[@]}"
     do
         if [ ! "$i" = "q" ]
         then

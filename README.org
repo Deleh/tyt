@@ -147,7 +147,7 @@ Make sure your terminal emulator supports Unicode to see the notes.
   fi
 #+end_src
 
-*** Get URL
+*** Get URL and other data
 
 To play a video, we need to get a valid URL.
 Since there are sometimes parsing errors of the JSON response, we use an endless loop to try until we get a valid response.
@@ -213,7 +213,7 @@ If the interactive flag is present, show the first ten results and query for a v
   then
       echo ""
       selections=(0 1 2 3 4 5 6 7 8 9 q)
-      for i in ${selections[@]}
+      for i in "${selections[@]}"
       do
           if [ ! "$i" = "q" ]
           then
