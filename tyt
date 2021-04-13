@@ -21,13 +21,14 @@ then
 fi
 
 function print_usage {
-  echo "tyt [ (-a* | --alternative) | (-i | --interactive) | (-m | --music) ] \"QUERY\""
+  echo "tyt [ (-a* | --alternative) | (-i | --interactive) | (-m | --music) (-s | --save)] \"QUERY\""
 }
 
 alternative=0
 format="flac"
 interactive=false
 music=false
+save=false
 help=false
 
 for arg in "$@"
@@ -48,6 +49,10 @@ do
       ;;
     -m|--music)
       music=true
+      shift
+      ;;
+    -s|--save)
+      save=true
       shift
       ;;
     -h|--help)
@@ -174,34 +179,49 @@ function play {
     echo -ne "Playing: \e[32m\e[1m$2\e[0m (\e[33m\e[1m$3\e[0m)\n"
     if [ "$music" = true ]
     then
-        mpv --no-video $1 &> /dev/null
+        mpv --no-video "$1" &> /dev/null
     else
-        mpv $1 &> /dev/null
+        mpv "$1" &> /dev/null
     fi
 }
 
-play "$url" "$title" "$uploader"
+function download {
+    echo -ne "Downloading: \e[32m\e[1m$2\e[0m (\e[33m\e[1m$3\e[0m)\n"
+    if [ "$music" = true ]
+    then
+        youtube-dl -x -o "%(title)s.%(ext)s" "$1" &> /dev/null
+    else
+        youtube-dl -o "%(title)s.%(ext)s" "$1" &> /dev/null
+    fi
+}
 
-if [ "$interactive" = true ]
+if [ "$save" = true ]
 then
-    while :
-    do
-        echo -ne "\nSelect another or enter [q] to quit: "
-        read selection
-        while [[ ! "${selections[@]}" =~ "${selection}" ]]
+    download "$url" "$title" "$uploader"
+else
+    play "$url" "$title" "$uploader"
+
+    if [ "$interactive" = true ]
+    then
+        while :
         do
-            echo -ne "Not valid, try again: "
+            echo -ne "\nSelect another or enter [q] to quit: "
             read selection
+            while [[ ! "${selections[@]}" =~ "${selection}" ]]
+            do
+                echo -ne "Not valid, try again: "
+                read selection
+            done
+            if [ ! "$selection" = "q" ]
+            then
+                echo ""
+                url=${urls[$selection]}
+                title=${titles[$selection]}
+                uploader=${uploaders[$selection]}
+                play "$url" "$title" "$uploader"
+            else
+              exit
+            fi
         done
-        if [ ! "$selection" = "q" ]
-        then
-            echo ""
-            url=${urls[$selection]}
-            title=${titles[$selection]}
-            uploader=${uploaders[$selection]}
-            play "$url" "$title" "$uploader"
-        else
-          exit
-        fi
-    done
+    fi
 fi

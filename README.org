@@ -52,7 +52,7 @@ This function prints the usage of the script.
 
 #+begin_src bash
   function print_usage {
-    echo "tyt [ (-a* | --alternative) | (-i | --interactive) | (-m | --music) ] \"QUERY\""
+    echo "tyt [ (-a* | --alternative) | (-i | --interactive) | (-m | --music) (-s | --save)] \"QUERY\""
   }
 #+end_src
 
@@ -61,9 +61,10 @@ This function prints the usage of the script.
 At first we parse the arguments.
 We have the following flags:
 
-- =-a*|--alternative= :: Alternative video (optional); You can parse any amount of alternatives (e.g. =-aaa=)
-- =-i|--interactive= :: Interactive mode; Shows the first 10 results and queries for a selection; If this flag is set, =-a= is ignored
-- =-m|--music= :: Play only the audio track of the video
+- =-a* | --alternative= :: Alternative video (optional); You can parse any amount of alternatives (e.g. =-aaa=)
+- =-i | --interactive= :: Interactive mode; Shows the first 10 results and queries for a selection; If this flag is set, =-a= is ignored
+- =-m | --music= :: Play only the audio track of the video
+- =-s | --save= :: Save the video (or audio if =-m= is set) to the current directory
 
 Additionally we have exacly one mandatory quoted string as query.
 
@@ -72,6 +73,7 @@ Additionally we have exacly one mandatory quoted string as query.
   format="flac"
   interactive=false
   music=false
+  save=false
   help=false
 
   for arg in "$@"
@@ -92,6 +94,10 @@ Additionally we have exacly one mandatory quoted string as query.
         ;;
       -m|--music)
         music=true
+        shift
+        ;;
+      -s|--save)
+        save=true
         shift
         ;;
       -h|--help)
@@ -237,10 +243,10 @@ If the interactive flag is present, show the first ten results and query for a v
   fi
 #+end_src
 
-*** Play video
+*** Play or save video
 
-Finally the video is played via mpv.
-If the =-m= flag is set, only the audio track is played.
+Finally the video is played via mpv or saved via youtube-dl.
+If the =-m= flag is set, only the audio track is played or saved.
 
 In interaction mode, another video is queried to be played.
 
@@ -249,35 +255,50 @@ In interaction mode, another video is queried to be played.
       echo -ne "Playing: \e[32m\e[1m$2\e[0m (\e[33m\e[1m$3\e[0m)\n"
       if [ "$music" = true ]
       then
-          mpv --no-video $1 &> /dev/null
+          mpv --no-video "$1" &> /dev/null
       else
-          mpv $1 &> /dev/null
+          mpv "$1" &> /dev/null
       fi
   }
   
-  play "$url" "$title" "$uploader"
+  function download {
+      echo -ne "Downloading: \e[32m\e[1m$2\e[0m (\e[33m\e[1m$3\e[0m)\n"
+      if [ "$music" = true ]
+      then
+          youtube-dl -x -o "%(title)s.%(ext)s" "$1" &> /dev/null
+      else
+          youtube-dl -o "%(title)s.%(ext)s" "$1" &> /dev/null
+      fi
+  }
 
-  if [ "$interactive" = true ]
+  if [ "$save" = true ]
   then
-      while :
-      do
-          echo -ne "\nSelect another or enter [q] to quit: "
-          read selection
-          while [[ ! "${selections[@]}" =~ "${selection}" ]]
+      download "$url" "$title" "$uploader"
+  else
+      play "$url" "$title" "$uploader"
+
+      if [ "$interactive" = true ]
+      then
+          while :
           do
-              echo -ne "Not valid, try again: "
+              echo -ne "\nSelect another or enter [q] to quit: "
               read selection
+              while [[ ! "${selections[@]}" =~ "${selection}" ]]
+              do
+                  echo -ne "Not valid, try again: "
+                  read selection
+              done
+              if [ ! "$selection" = "q" ]
+              then
+                  echo ""
+                  url=${urls[$selection]}
+                  title=${titles[$selection]}
+                  uploader=${uploaders[$selection]}
+                  play "$url" "$title" "$uploader"
+              else
+                exit
+              fi
           done
-          if [ ! "$selection" = "q" ]
-          then
-              echo ""
-              url=${urls[$selection]}
-              title=${titles[$selection]}
-              uploader=${uploaders[$selection]}
-              play "$url" "$title" "$uploader"
-          else
-            exit
-          fi
-      done
+      fi
   fi
 #+end_src
