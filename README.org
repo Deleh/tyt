@@ -22,14 +22,14 @@ This project is a [[https://nixos.wiki/wiki/Flakes][Nix flake]].
 If you have a recent *Nix* version and *flakes* are enabled, you can execute the script via:
 
 #+begin_example sh
-  nix run github:Deleh/tyt
+  nix run github:Deleh/tyt -- --help
 #+end_example
 
 If you are not running the [[https://nixos.org/][Nix]] package manager, you should definitely try it out.
 Anyway, this is just a shell script so clone the repo, make sure the dependencies listed below are fulfilled and there you go.
 
 #+begin_example sh
-  ./tyt
+  ./tyt --help
 #+end_example
 
 ** Usage
@@ -40,6 +40,7 @@ Anyway, this is just a shell script so clone the repo, make sure the dependencie
 
   Options:
     -a* --alternative  Play an alternative video (e.g. -aaa for third alternative)
+    -h  --help         Show this help message
     -i  --interactive  Interactive mode (overrides --alternative)
     -m  --music        Play only the audio track
     -s  --save         Save video (or audio if -m is provided) to the current directory
@@ -103,6 +104,7 @@ This function prints the usage of the script.
       echo ""
       echo "Options:"
       echo "  -a* --alternative  Play an alternative video (e.g. -aaa for third alternative)"
+      echo "  -h  --help         Show this help message"
       echo "  -i  --interactive  Interactive mode (overrides --alternative)"
       echo "  -m  --music        Play only the audio track"
       echo "  -s  --save         Save video (or audio if -m is provided) to the current directory"
@@ -126,11 +128,14 @@ At first we parse the arguments.
 We have the following flags:
 
 - =-a* | --alternative= :: Alternative video; You can parse any amount of alternatives (e.g. =-aaa=)
+- =-h | --help :: Show a help message
 - =-i | --interactive= :: Interactive mode; Shows the first 10 results and queries for a selection; If this flag is set, =-a= is ignored
 - =-m | --music= :: Play only the audio track of the video
 - =-s | --save= :: Save the video (or audio if =-m= is set) to the current directory
 
 Additionally we have exacly one mandatory quoted string as query.
+
+
 
 #+begin_src bash
   alternative=0

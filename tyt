@@ -26,6 +26,7 @@ function print_usage {
     echo ""
     echo "Options:"
     echo "  -a* --alternative  Play an alternative video (e.g. -aaa for third alternative)"
+    echo "  -h  --help         Show this help message"
     echo "  -i  --interactive  Interactive mode (overrides --alternative)"
     echo "  -m  --music        Play only the audio track"
     echo "  -s  --save         Save video (or audio if -m is provided) to the current directory"
