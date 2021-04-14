@@ -22,14 +22,14 @@ This project is a [[https://nixos.wiki/wiki/Flakes][Nix flake]].
 If you have a recent *Nix* version and *flakes* are enabled, you can execute the script via:
 
 #+begin_example sh
-  nix run github:Deleh/tyt --help
+  nix run github:Deleh/tyt
 #+end_example
 
 If you are not running the [[https://nixos.org/][Nix]] package manager, you should definitely try it out.
 Anyway, this is just a shell script so clone the repo, make sure the dependencies listed below are fulfilled and there you go.
 
 #+begin_example sh
-  ./tyt --help
+  ./tyt
 #+end_example
 
 ** Usage
