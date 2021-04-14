@@ -14,7 +14,7 @@ It is created via literate programming, you can find the code below.
 - Interactively select a video from a list
 - Download a video to the current working directory
 
-There is a =--music= flag, so you can substitute /video/ with /song/ in the list.
+There is a =--music= flag, so you can substitute /video/ with /song/ in the above list.
 
 ** Execution
 
