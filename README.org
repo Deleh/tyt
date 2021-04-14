@@ -21,16 +21,40 @@ There is a =--music= flag, so you can substitute /video/ with /song/ in the abov
 This project is a [[https://nixos.wiki/wiki/Flakes][Nix flake]].
 If you have a recent *Nix* version and *flakes* are enabled, you can execute the script via:
 
-#+begin_src sh
+#+begin_example sh
   nix run github:Deleh/tyt --help
-#+end_src
+#+end_example
 
 If you are not running the [[https://nixos.org/][Nix]] package manager, you should definitely try it out.
 Anyway, this is just a shell script so clone the repo, make sure the dependencies listed below are fulfilled and there you go.
 
-#+begin_src sh
+#+begin_example sh
   ./tyt --help
-#+end_src
+#+end_example
+
+** Usage
+
+#+begin_example text
+  Usage:
+    tyt [options] "<quoted_query>"
+
+  Options:
+    -a* --alternative  Play an alternative video (e.g. -aaa for third alternative)
+    -i  --interactive  Interactive mode (overrides --alternative)
+    -m  --music        Play only the audio track
+    -s  --save         Save video (or audio if -m is provided) to the current directory
+
+  Examples:
+
+    Search for "Elephants Dream" and play the video:
+      tyt "Elephants Dream"
+
+    Search for "The Beatles - Yellow Submarine" and play only the music:
+      tyt -m "The Beatles - Yellow Submarine"
+
+    Search for "Elephants Dream" interactively and download the selected video:
+      tyt -i -s "Elephants Dream"
+#+end_example
    
 ** Script
 *** Dependencies
@@ -74,7 +98,25 @@ This function prints the usage of the script.
 
 #+begin_src bash
   function print_usage {
-    echo "tyt [ (-a* | --alternative) | (-i | --interactive) | (-m | --music) (-s | --save)] \"QUERY\""
+      echo "Usage:"
+      echo "  tyt [options] \"<quoted_query>\""
+      echo ""
+      echo "Options:"
+      echo "  -a* --alternative  Play an alternative video (e.g. -aaa for third alternative)"
+      echo "  -i  --interactive  Interactive mode (overrides --alternative)"
+      echo "  -m  --music        Play only the audio track"
+      echo "  -s  --save         Save video (or audio if -m is provided) to the current directory"
+      echo ""
+      echo "Examples:"
+      echo ""
+      echo "  Search for \"Elephants Dream\" and play the video:"
+      echo "    tyt \"Elephants Dream\""
+      echo ""
+      echo "  Search for \"The Beatles - Yellow Submarine\" and play only the music:"
+      echo "    tyt -m \"The Beatles - Yellow Submarine\""
+      echo ""
+      echo "  Search for \"Elephants Dream\" interactively and download the selected video:"
+      echo "    tyt -i -s \"Elephants Dream\""
   }
 #+end_src
 
@@ -83,7 +125,7 @@ This function prints the usage of the script.
 At first we parse the arguments.
 We have the following flags:
 
-- =-a* | --alternative= :: Alternative video (optional); You can parse any amount of alternatives (e.g. =-aaa=)
+- =-a* | --alternative= :: Alternative video; You can parse any amount of alternatives (e.g. =-aaa=)
 - =-i | --interactive= :: Interactive mode; Shows the first 10 results and queries for a selection; If this flag is set, =-a= is ignored
 - =-m | --music= :: Play only the audio track of the video
 - =-s | --save= :: Save the video (or audio if =-m= is set) to the current directory

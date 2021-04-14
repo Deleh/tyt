@@ -21,7 +21,25 @@ then
 fi
 
 function print_usage {
-  echo "tyt [ (-a* | --alternative) | (-i | --interactive) | (-m | --music) (-s | --save)] \"QUERY\""
+    echo "Usage:"
+    echo "  tyt [options] \"<quoted_query>\""
+    echo ""
+    echo "Options:"
+    echo "  -a* --alternative  Play an alternative video (e.g. -aaa for third alternative)"
+    echo "  -i  --interactive  Interactive mode (overrides --alternative)"
+    echo "  -m  --music        Play only the audio track"
+    echo "  -s  --save         Save video (or audio if -m is provided) to the current directory"
+    echo ""
+    echo "Examples:"
+    echo ""
+    echo "  Search for \"Elephants Dream\" and play the video:"
+    echo "    tyt \"Elephants Dream\""
+    echo ""
+    echo "  Search for \"The Beatles - Yellow Submarine\" and play only the music:"
+    echo "    tyt -m \"The Beatles - Yellow Submarine\""
+    echo ""
+    echo "  Search for \"Elephants Dream\" interactively and download the selected video:"
+    echo "    tyt -i -s \"Elephants Dream\""
 }
 
 alternative=0
