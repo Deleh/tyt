@@ -8,6 +8,30 @@ It is created via literate programming, you can find the code below.
 
 [[./images/screenshot.png]]
 
+** Features
+
+- Search and play videos with one command
+- Interactively select a video from a list
+- Download a video to the current working directory
+
+There is a =--music= flag, so you can substitute /video/ with /song/ in the list.
+
+** Execution
+
+This project is a [[https://nixos.wiki/wiki/Flakes][Nix flake]].
+If you have a recent *Nix* version and *flakes* are enabled, you can execute the script via:
+
+#+begin_src sh
+  nix run github:Deleh/tyt --help
+#+end_src
+
+If you are not running the [[https://nixos.org/][Nix]] package manager, you should definitely try it out.
+Anyway, this is just a shell script so clone the repo, make sure the dependencies listed below are fulfilled and there you go.
+
+#+begin_src sh
+  ./tyt --help
+#+end_src
+   
 ** Script
 *** Dependencies
 
@@ -18,8 +42,6 @@ The dependencies of the script are:
 - [[https://ytdl-org.github.io/youtube-dl/][youtube-dl]]
 
 Please make sure those are available on your system.
-If you are using the [[https://nixos.org/][Nix]] package manager, you can run =nix-shell= in the project directory.
-This will drop you into a shell with all requirements fulfilled.
 
 On the start of the script, it is checked if the dependencies are fulfilled.
 
