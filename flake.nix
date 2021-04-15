@@ -3,7 +3,7 @@
 
   outputs = { self, nixpkgs }: {
 
-    defaultPackage.x86_64-linux =
+    packages.x86_64-linux.tyt =
       with import nixpkgs { system = "x86_64-linux"; };
 
       stdenv.mkDerivation {
@@ -28,6 +28,8 @@
           install -m 755 -D tyt $out/bin/tyt
         '';
       };
+
+    defaultPackage.x86_64-linux = self.packages.x86_64-linux.tyt;
 
   };
 }
