@@ -27,7 +27,7 @@ If you have a recent *Nix* version and *flakes* are enabled, you can execute the
 
 If you are not running the [[https://nixos.org/][Nix]] package manager, you should definitely try it out.
 
-Anyway, this is just a shell script so clone the repo, make sure the dependencies listed below are fulfilled and there you go.
+Anyway, this is just a shell script so clone the repo, make sure the dependencies listed below are fulfilled and there you go:
 
 #+begin_example sh
   ./tyt --help
@@ -36,15 +36,13 @@ Anyway, this is just a shell script so clone the repo, make sure the dependencie
 ** Dependencies
 
 If you are running tyt as *Nix flake* you don't have to care about dependencies.
-A mpv version with scripts is used by default, this enables *MPRIS support* while playback and *skipping sponsored seqments* of videos.
+A mpv version with scripts is used by default, this enables *MPRIS support* while playback and *skipping sponsored segments* of videos.
 
-These are the dependencies of the script:
+If you are not running Nix, make sure the following dependencies are installed on your system and hope that everything works:
 
 - [[https://stedolan.github.io/jq/][jq]]
 - [[https://mpv.io/][mpv]]
 - [[https://ytdl-org.github.io/youtube-dl/][youtube-dl]]
-
-If you are not running Nix, make sure those are available on your system and hope that everything works.
 
 ** Usage
 
