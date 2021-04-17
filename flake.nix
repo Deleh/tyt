@@ -1,35 +1,64 @@
 {
   description = "Play YouTube videos from the command line in a convenient way";
 
-  outputs = { self, nixpkgs }: {
+  inputs.flake-utils.url = "github:numtide/flake-utils";
 
-    packages.x86_64-linux.tyt =
-      with import nixpkgs { system = "x86_64-linux"; };
+  outputs = { self, nixpkgs, flake-utils }:
 
-      stdenv.mkDerivation {
+    flake-utils.lib.eachDefaultSystem
+      (system:
+        let
+          pkgs = nixpkgs.legacyPackages.${system};
 
-        name = "tyt";
-        src = self;
+          # Use mpv with scripts
+          mpv = (pkgs.mpv-with-scripts.override {
+            scripts = [
+              pkgs.mpvScripts.mpris
+              pkgs.mpvScripts.sponsorblock
+            ];
+          });
 
-        buildInputs = [
-          jq
-          mpv
-          youtube-dl
-        ];
+          dependencies = with pkgs; [
+            jq
+            mpv
+            youtube-dl
+          ];
 
-        patchPhase = ''
-          substituteInPlace tyt \
-            --replace jq ${jq}/bin/jq \
-            --replace mpv ${mpv}/bin/mpv \
-            --replace youtube-dl ${youtube-dl}/bin/youtube-dl
-        '';
-  
-        installPhase = ''
-          install -m 755 -D tyt $out/bin/tyt
-        '';
-      };
+        in
+        {
 
-    defaultPackage.x86_64-linux = self.packages.x86_64-linux.tyt;
+          # Package
 
-  };
+          packages.tyt =
+
+            pkgs.stdenv.mkDerivation {
+
+              name = "tyt";
+              src = self;
+
+              buildInputs = dependencies;
+
+              patchPhase = with pkgs; ''
+                substituteInPlace tyt \
+                  --replace jq ${jq}/bin/jq \
+                  --replace mpv ${mpv}/bin/mpv \
+                  --replace youtube-dl ${youtube-dl}/bin/youtube-dl
+              '';
+
+              installPhase = ''
+                install -m 755 -D tyt $out/bin/tyt
+              '';
+            };
+
+          defaultPackage = self.packages.${system}.tyt;
+
+          # Development shell
+
+          devShell = pkgs.mkShell {
+            buildInputs = dependencies;
+          };
+
+        }
+
+      );
 }
