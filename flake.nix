@@ -20,12 +20,6 @@
             ];
           });
 
-          dependencies = with pkgs; [
-            jq
-            mpv
-            youtube-dl
-          ];
-
         in
         {
 
@@ -38,13 +32,11 @@
               name = "tyt";
               src = self;
 
-              buildInputs = dependencies;
-
               patchPhase = with pkgs; ''
                 substituteInPlace tyt \
-                  --replace jq ${jq}/bin/jq \
+                  --replace jq ${pkgs.jq}/bin/jq \
                   --replace mpv ${mpv}/bin/mpv \
-                  --replace youtube-dl ${youtube-dl}/bin/youtube-dl
+                  --replace youtube-dl ${pkgs.youtube-dl}/bin/youtube-dl
               '';
 
               installPhase = ''
@@ -57,7 +49,11 @@
           # Development shell
 
           devShell = pkgs.mkShell {
-            buildInputs = dependencies;
+            buildInputs = [
+              pkgs.jq
+              mpv
+              pkgs.youtube-dl
+            ];
           };
 
         }
