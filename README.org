@@ -132,7 +132,7 @@ At first we parse the arguments.
 We have the following flags:
 
 - =-a* | --alternative= :: Alternative video; You can parse any amount of alternatives (e.g. =-aaa=)
-- =-h | --help :: Show a help message
+- =-h | --help= :: Show a help message
 - =-i | --interactive= :: Interactive mode; Shows the first 10 results and queries for a selection; If this flag is set, =-a= is ignored
 - =-m | --music= :: Play only the audio track of the video
 - =-s | --save= :: Save the video (or audio if =-m= is set) to the current directory
