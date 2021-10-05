@@ -65,7 +65,6 @@ function play {
     else
         mpv --msg-level=all=no,statusline=status --term-status-msg="\${time-pos}/\${duration} - ${text_bold}${2//\\/\\\\}${text_reset} (${text_yellow}${text_bold}${3//\\/\\\\}${text_reset})" "$1"
     fi
-    echo
 }
 
 function download {
