@@ -1,212 +1,76 @@
 #!/usr/bin/env bash
-missing_dependencies=false
-if ! command -v jq &> /dev/null
-then
-    echo -ne "\e[1mjq\e[0m was not found, please install it\n"
-    missing_dependencies=true
-fi
-if ! command -v mpv &> /dev/null
-then
-    echo -ne "\e[1mmpv\e[0m was not found, please install it\n"
-    missing_dependencies=true
-fi
-if ! command -v youtube-dl &> /dev/null
-then
-    echo -ne "\e[1myoutube-dl\e[0m was not found, please install it\n"
-    missing_dependencies=true
-fi
-if [ "$missing_dependencies" = true ]
-then
-    exit 1
-fi
+
+# Text formatting variables
+text_bold="\e[1m"
+text_red="\e[31m"
+text_reset="\e[0m"
+text_yellow="\e[33m"
 
 function print_usage {
-    echo "Usage:"
-    echo "  tyt [options] \"<quoted_query>\""
-    echo ""
-    echo "Options:"
-    echo "  -a* --alternative  Play an alternative video (e.g. -aaa for third alternative)"
-    echo "  -h  --help         Show this help message"
-    echo "  -i  --interactive  Interactive mode (overrides --alternative)"
-    echo "  -m  --music        Play only the audio track"
-    echo "  -s  --save         Save video (or audio if -m is provided) to the current directory"
-    echo ""
-    echo "Examples:"
-    echo ""
-    echo "  Search for \"Elephants Dream\" and play the video:"
-    echo "    tyt \"Elephants Dream\""
-    echo ""
-    echo "  Search for \"The Beatles - Yellow Submarine\" and play only the music:"
-    echo "    tyt -m \"The Beatles - Yellow Submarine\""
-    echo ""
-    echo "  Search for \"Elephants Dream\" interactively and download the selected video:"
-    echo "    tyt -i -s \"Elephants Dream\""
+    cat <<EOF
+Usage: tyt [OPTIONS] QUERIES ... [OPTIONS]
+
+Play YouTube videos from the command line in a convenient way.
+
+OPTIONS
+  -h,  --help         Show this help message
+  -a*, --alternative  Play an alternative video (e.g. -aaa for third
+                      alternative)
+  -d,  --download     Download video (or audio if -m is provided) to the current
+                      directory
+  -i,  --interactive  Interactive mode (overrides --alternative)
+  -m,  --music        Play only the audio track
+
+EXAMPLES
+  tyt Elephants Dream                    # Search for 'Elephants Dream' and play
+                                         # the video
+  tyt -m The Beatles - Yellow Submarine  # Search for 'The Beatles - Yellow
+                                         # Submarine' and play only the music
+  tyt -i -s Elephants Dream              # Search for 'Elephants Dream'
+                                         # interactively and download the
+                                         # selected video
+EOF
+    exit
 }
 
-alternative=0
-format="flac"
-interactive=false
-music=false
-save=false
-help=false
-
-for arg in "$@"
-do
-  case $arg in
-    -a*)
-      alternative="${arg:1}"
-      alternative="${#alternative}"
-      shift
-      ;;
-    --alternative)
-      alternative=1
-      shift
-      ;;
-    -i|--interactive)
-      interactive=true
-      shift
-      ;;
-    -m|--music)
-      music=true
-      shift
-      ;;
-    -s|--save)
-      save=true
-      shift
-      ;;
-    -h|--help)
-      help=true
-      shift
-      ;;
-    *)
-      other_arguments+=("$1")
-      shift
-      ;;
-  esac
-done
-
-if [ "$help" = true ]
-then
-  print_usage
-  exit 0
-fi
-
-if [ "${#other_arguments[@]}" != "1" ]
-then
-  print_usage
-  exit 1
-fi
-
-query="${other_arguments[0]}"
-
-if [ "$music" = false ]
-then
-  echo -ne "\n      \e[1m\ /\e[0m\n"
-  echo -ne "    \e[1m=======\e[0m\n"
-  echo -ne "    \e[1m| \e[31mtyt\e[0m \e[1m|\e[0m\n"
-  echo -ne "    \e[1m=======\e[0m\n\n"
-else
-  echo -ne "\n      \e[1m\ /\e[0m     ♫\n"
-  echo -ne "    \e[1m=======\e[0m ♫\n"
-  echo -ne "    \e[1m| \e[31mtyt\e[0m \e[1m|\e[0m\n"
-  echo -ne "    \e[1m=======\e[0m\n\n"
-fi
-
-i=0
-
-if [ "$interactive" = true ]
-then
-  n=10
-else
-  n=$((alternative+1))
-fi
-
-echo -ne "Searching for: \e[34m\e[1m$query\e[0m    \r"
-
-until results=$(youtube-dl --default-search "ytsearch" -j "ytsearch$n:$query") &> /dev/null
-do
-
-  case $i in
-    0)
-  appendix="   "
-  ;;
-    1)
-  appendix=".  "
-  ;;
-    2)
-  appendix=".. "
-  ;;
-    *)
-  appendix="..."
-  ;;
-  esac
-
-  echo -ne "Searching for: \e[34m\e[1m$query\e[0m $appendix\r"
-
-  i=$(((i + 1) % 4))
-  sleep 1
-
-done
-
-echo -ne "Searching for: \e[34m\e[1m$query\e[0m    \n"
-
-urls=$(echo $results | jq '.webpage_url' | tr -d '"')
-titles=$(echo $results | jq '.fulltitle' | tr -d '"')
-uploaders=$(echo $results | jq '.uploader' | tr -d '"')
-
-OLDIFS=$IFS
-IFS=$'\n'
-urls=($urls)
-titles=($titles)
-uploaders=($uploaders)
-IFS=$OLDIFS
-
-if [ "$interactive" = true ]
-then
-    echo ""
-    selections=(0 1 2 3 4 5 6 7 8 9 q)
-    for i in "${selections[@]}"
-    do
-        if [ ! "$i" = "q" ]
-        then
-            echo -ne "  \e[1m$i\e[0m: ${titles[$i]} (\e[33m\e[1m${uploaders[$i]}\e[0m)\n"
-        fi
-    done
-    echo -ne "  \e[1mq\e[0m: Quit\n"
-    echo -ne "\nSelection: "
-    read selection
-    while [[ ! "${selections[@]}" =~ "${selection}" ]]
-    do
-        echo -ne "Not valid, try again: "
-        read selection
-    done
-    if [ "$selection" = "q" ]
+function print_logo {
+    if [ "$music" == true ]
     then
-        exit
+        echo -ne "\n      ${text_bold}\ /${text_reset}     ♫\n"
+        echo -ne "    ${text_bold}=======${text_reset} ♫\n"
+        echo -ne "    ${text_bold}| ${text_red}tyt${text_reset} ${text_bold}|${text_reset}\n"
+        echo -ne "    ${text_bold}=======${text_reset}\n\n"
+    else
+        echo -ne "\n      ${text_bold}\ /${text_reset}\n"
+        echo -ne "    ${text_bold}=======${text_reset}\n"
+        echo -ne "    ${text_bold}| ${text_red}tyt${text_reset} ${text_bold}|${text_reset}\n"
+        echo -ne "    ${text_bold}=======${text_reset}\n\n"
     fi
-    echo ""
-    url=${urls[$selection]}
-    title=${titles[$selection]}
-    uploader=${uploaders[$selection]}
-else
-    url=${urls[$alternative]}
-    title=${titles[$alternative]}
-    uploader=${uploaders[$alternative]}
-fi
+}
+
+function print_controls {
+    echo -e "[${text_bold}p${text_reset}] Play/Pause, [${text_bold}←${text_reset}/${text_bold}→${text_reset}] Fast-Backward/-Forward, [${text_bold}q${text_reset}] Stop"
+}
+
+function error {
+    echo -ne "${text_bold}ERROR${text_reset} $1\n" >&2
+    exit 1
+}
 
 function play {
-    echo -ne "Playing: \e[32m\e[1m$2\e[0m (\e[33m\e[1m$3\e[0m)\n"
-    if [ "$music" = true ]
+    print_controls
+    if [ "$music" == true ]
     then
-        mpv --no-video "$1" &> /dev/null
+        mpv --no-video --msg-level=all=no,statusline=status --term-status-msg="\${time-pos}/\${duration} - ${text_bold}${2//\\/\\\\}${text_reset} (${text_yellow}${text_bold}${3//\\/\\\\}${text_reset})" "$1"
     else
-        mpv "$1" &> /dev/null
+        mpv --msg-level=all=no,statusline=status --term-status-msg="\${time-pos}/\${duration} - ${text_bold}${2//\\/\\\\}${text_reset} (${text_yellow}${text_bold}${3//\\/\\\\}${text_reset})" "$1"
     fi
+    echo
 }
 
 function download {
-    echo -ne "Downloading: \e[32m\e[1m$2\e[0m (\e[33m\e[1m$3\e[0m)\n"
-    if [ "$music" = true ]
+    echo -ne "Downloading: ${text_bold}$2${text_reset} (${text_yellow}${text_bold}$3${text_reset})\n"
+    if [ "$music" == true ]
     then
         youtube-dl -x -o "%(title)s.%(ext)s" "$1" &> /dev/null
     else
@@ -214,33 +78,167 @@ function download {
     fi
 }
 
-if [ "$save" = true ]
+# Set default values
+alternative=1
+download=false
+interactive=false
+music=false
+query=""
+
+# Parse arguments
+while (( "$#" )); do
+    case "$1" in
+        -a*)
+            alternative="${#1}"
+            shift
+            ;;
+        --alternative)
+            alternative=2
+            shift
+            ;;
+        -d|--download)
+            download=true
+            shift
+            ;;
+        -h|--help)
+            print_usage
+            ;;
+        -i|--interactive)
+            interactive=true
+            shift
+            ;;
+        -m|--music)
+            music=true
+            shift
+            ;;
+        -)
+            query="$query $1"
+            shift
+            ;;
+        -*|--*=)
+            error "Unsupported flag: $1"
+            ;;
+        *)
+            query="$query $1"
+            shift
+            ;;
+    esac
+done
+
+# Check dependencies
+if ! command -v jq &> /dev/null
+then
+    error "jq was not found, please install it"
+elif ! command -v mpv &> /dev/null
+then
+    error -ne "mpv was not found, please install it"
+elif ! command -v youtube-dl &> /dev/null
+then
+    error "youtube-dl was not found, please install it"
+fi
+
+print_logo
+echo -ne "Searching for: $text_bold${query:1}$text_reset\n"
+
+# Set number of videos
+if [ "$interactive" == true ]
+then
+  n=10
+else
+  n="$alternative"
+fi
+
+# Get results
+results=$(youtube-dl --default-search "ytsearch" -j "ytsearch$n:${query:1}")
+urls=$(echo $results | jq '.webpage_url' | tr -d '"')
+titles=$(echo $results | jq '.fulltitle' | tr -d '"')
+uploaders=$(echo $results | jq '.uploader' | tr -d '"')
+
+# Create arrays
+OLDIFS=$IFS
+IFS=$'\n'
+urls=($urls)
+titles=($titles)
+uploaders=($uploaders)
+IFS=$OLDIFS
+
+if [ "${#urls[@]}" == 0 ]
+then
+    error "No results, try again"
+fi
+
+# Select video
+if [ "$interactive" = true ]
+then
+    echo ""
+    selections=(0 1 2 3 4 5 6 7 8 9 q)
+    for i in "${selections[@]}"
+    do
+        if [ "$i" != "q" ]
+        then
+            echo -e "  ${text_bold}$i${text_reset}: ${titles[$i]} (${text_yellow}${text_bold}${uploaders[$i]}${text_reset})"
+        fi
+    done
+    echo -e "  ${text_bold}q${text_reset}: Quit\n"
+    echo -ne "Selection: "
+    read -n1 selection
+    echo
+    while [[ ! "${selections[@]}" =~ "${selection}" ]]
+    do
+        echo -ne "Not valid, try again: "
+        read -n1 selection
+        echo
+    done
+    if [ "$selection" == "q" ]
+    then
+        echo
+        exit
+    fi
+    echo
+    url=${urls[$selection]}
+    title=${titles[$selection]}
+    uploader=${uploaders[$selection]}
+else
+    url=${urls[$((alternative-1))]}
+    title=${titles[$((alternative-1))]}
+    uploader=${uploaders[$((alternative-1))]}
+fi
+
+# Download or play video
+if [ "$download" = true ]
 then
     download "$url" "$title" "$uploader"
 else
     play "$url" "$title" "$uploader"
-
-    if [ "$interactive" = true ]
-    then
-        while :
+fi
+if [ "$interactive" == true ]
+then
+    while :
+    do
+        echo -ne "\nSelect another or enter [${text_bold}q${text_reset}] to quit: "
+        read -n1 selection
+        echo
+        while [[ ! "${selections[@]}" =~ "${selection}" ]]
         do
-            echo -ne "\nSelect another or enter [q] to quit: "
-            read selection
-            while [[ ! "${selections[@]}" =~ "${selection}" ]]
-            do
-                echo -ne "Not valid, try again: "
-                read selection
-            done
-            if [ ! "$selection" = "q" ]
-            then
-                echo ""
-                url=${urls[$selection]}
-                title=${titles[$selection]}
-                uploader=${uploaders[$selection]}
-                play "$url" "$title" "$uploader"
-            else
-              exit
-            fi
+            echo -ne "Not valid, try again: "
+            read -n1 selection
+            echo
         done
-    fi
+        if [ "$selection" != "q" ]
+        then
+            echo
+            url=${urls[$selection]}
+            title=${titles[$selection]}
+            uploader=${uploaders[$selection]}
+            if [ "$download" == true ]
+            then
+                download "$url" "$title" "$uploader"
+            else
+                play "$url" "$title" "$uploader"
+            fi
+        else
+            echo
+            exit
+        fi
+    done
 fi

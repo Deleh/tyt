@@ -1,7 +1,7 @@
 {
   description = "Play YouTube videos from the command line in a convenient way";
 
-  nixConfig.bash-prompt = "\[\\e[1m\\e[31mtyt-develop\\e[0m\]$ ";
+  nixConfig.bash-prompt = "\[\\e[1m\\e[31mtyt-develop\\e[0m:\\w\]$ ";
 
   inputs.flake-utils.url = "github:numtide/flake-utils";
 
