@@ -15,7 +15,7 @@
 ** Execution
 
    This project is a [[https://nixos.wiki/wiki/Flakes][Nix flake]].
-   If you have a recent [[https://nixos.org/][Nix]] version and *Flakes* are enabled, you can execute the script via:
+   If you have a recent [[https://nixos.org/][Nix]] version and *flakes* are enabled, you can execute the script via:
 
    : nix run github:Deleh/tyt -- --help
 
@@ -26,7 +26,7 @@
 ** Dependencies
 
    If you are running tyt as *Nix flake* you don't have to care about dependencies.
-   A mpv version with scripts is used by default, this enables *MPRIS support* while playback and *skipping sponsored segments* of videos.
+   A mpv version with scripts is used by default, this enables *MPRIS support* and *skipping sponsored segments* of videos.
 
    If you are not running Nix, make sure the following dependencies are installed on your system and hope that everything works:
 
