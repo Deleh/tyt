@@ -136,6 +136,12 @@ then
     error "youtube-dl was not found, please install it"
 fi
 
+# Handle empty query
+if [ "$query" == "" ]
+then
+    print_usage
+fi
+
 print_logo
 echo -ne "Searching for: $text_bold${query:1}$text_reset\n"
 
